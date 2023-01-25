@@ -15,6 +15,12 @@ Please buy my wife a coffee to keep her happy, while I am busy developing Node-R
 
 <a href="https://www.buymeacoffee.com/bartbutenaers" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy my wife a coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
+## TODO's
++ Allow the [svgedit](https://www.npmjs.com/package/svgedit) NPM package to be used as a dependency, to host svg-edit locally for offline setups.
+   Currently the ***cloud version*** of svg-edit is being used (via this node's endpoint that acts as a proxy to avoid CORS issues).
++ The *"Cancel"* button - when leaving svgedit - does seem to be have incorrectly.
++ Add a custom button to the svg-edit top bar, to store the changes meanwhile to Node-RED withouth having to leave svg-edit.
+
 ## Node Usage
 
 1. You might optionally simply paste an SVG string into the input field, for example a string exported from a third-party SVG editor:
