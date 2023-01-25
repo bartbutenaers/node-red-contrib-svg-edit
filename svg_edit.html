@@ -1,0 +1,216 @@
+<!--
+  Copyright 2023, Bart Butenaers
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<script src="svg_edit/lib/beautifier.min.js"></script>
+<link href="svg_edit/lib/svgedit.css" rel="stylesheet" media="all"></link>
+
+<script type="module">
+    import SvgDrawingEditor from '/svg_edit/lib/Editor.js';
+
+    RED.nodes.registerType('svg-edit', {
+        category: 'svg',
+        defaults: {
+            name: { value: "" },
+            svgString: { value: "" }
+        },
+        inputs: 1,
+        outputs: 1,
+        paletteLabel: "svg edit",
+        color: "#ED782F",
+        icon: "font-awesome/fa-pencil-square-o",
+        label: function() {
+            return this.name || "svg edit";
+        },
+        oneditprepare: function() {
+            var node = this;
+        debugger; 
+
+            node.svgSourceEditor = RED.editor.createEditor({
+                id: 'node-input-svg-source',
+                mode: 'ace/mode/html',
+                value: $("#node-input-svgString").val()
+            });
+            node.svgSourceEditor.setFontSize(14); 
+            node.svgSourceEditor.focus();
+
+            function beautifySVG(svg, options){
+                var opts = {
+                    "indent_size": "2",
+                    "indent_char": " ",
+                    "max_preserve_newlines": "-1",
+                    "preserve_newlines": false,
+                    "keep_array_indentation": false,
+                    "break_chained_methods": true,
+                    "indent_scripts": "normal",
+                    "brace_style": "expand",
+                    "space_before_conditional": true,
+                    "unescape_strings": false,
+                    "jslint_happy": false,
+                    "end_with_newline": false,
+                    "wrap_line_length": "0",
+                    "indent_inner_html": false,
+                    "comma_first": false,
+                    "e4x": false,
+                    "indent_empty_lines": false
+                };
+                $.extend(opts, options);//merge options into opts (in case of duplicates, options takes precidence)
+                return html_beautify(svg,opts);
+            }
+
+            $("#node-expand-svg-source").on("click", async function (e) {
+                debugger
+                let svgSourceEditor = document.getElementById('node-input-svg-source');
+
+                // Check which implementation is available
+                var requestFullScreenMethod = svgSourceEditor.requestFullScreen       || 
+                                              svgSourceEditor.webkitRequestFullscreen ||                                                
+                                              svgSourceEditor.webkitRequestFullScreen || 
+                                              svgSourceEditor.mozRequestFullScreen    || 
+                                              svgSourceEditor.msRequestFullscreen;
+
+                if( requestFullScreenMethod ) {
+                    requestFullScreenMethod.apply(svgSourceEditor);
+                }
+            });
+            
+            $("#node-format-svg-source").on("click", function (e) {
+                try {
+                    var svgIn = node.svgSourceEditor.getValue();
+                    var svgOut = beautifySVG(svgIn);
+                    node.svgSourceEditor.setValue(svgOut);
+                } catch (error) {
+                    console.error(error);
+                }       
+            });
+            
+            $("#node-open-svg-edit").on("click", async function (e) {
+                debugger
+                let svgEditContainer = document.getElementById('svg-edit-container');
+
+                svgEditContainer.style.display = "";
+
+                if (!node.svgDrawingEditor) {
+                    node.svgDrawingEditor = new SvgDrawingEditor(svgEditContainer);
+                    node.svgDrawingEditor.init();
+                    node.svgDrawingEditor.setConfig({
+                        allowInitialUserOverride: true,
+                        fitToContent: true,
+                        extensions: [],
+                        noDefaultExtensions: false,
+                        // Prevent the "Do you want to save changes?" warning from appearing when the user closes the editor
+                        //no_save_warning: true,
+                        userExtensions: [/* { pathName: '/packages/react-test/dist/react-test.js' } */],
+                        // This node's endpoint will act as a http(s) proxy to load svg-edit (locally or online without CORS issues),
+                        // so make sure that svg-edit also loads its svg images (i.e. menu icons, ...) are loaded via the endpoint.
+                        imgPath: "svg_edit/lib/images/",
+                        // Don't load the default initial or last modified svg string from cache, since it will be loaded from this node.  
+                        // Otherwise the svg string that is applied via loadFromString, will be replaced by svg-edit immediately afterwards.
+                        noStorageOnLoad: true 
+                    })
+                }
+
+                var svgString = node.svgSourceEditor.getValue();
+                node.svgDrawingEditor.loadFromString(svgString);
+
+                // Check which implementation is available
+                var requestFullScreenMethod = svgEditContainer.requestFullScreen       || 
+                                              svgEditContainer.webkitRequestFullscreen ||                                                
+                                              svgEditContainer.webkitRequestFullScreen || 
+                                              svgEditContainer.mozRequestFullScreen    || 
+                                              svgEditContainer.msRequestFullscreen;
+
+                if( requestFullScreenMethod ) {
+                    requestFullScreenMethod.apply(svgEditContainer);
+                }
+     
+// TODO we moeten deze event handler ook bij sluiten verwijderen.  Hoe ?????????????????????????????????????????                
+                $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(event) {
+                    if (!document.fullscreenElement) {
+                        // Leaving full screen mode
+                        svgEditContainer.style.display = "none";
+                        
+                        var svgStringFromSourceEditor = node.svgSourceEditor.getValue();
+                        var svgStringFromDrawingEditor = node.svgDrawingEditor.svgCanvas.getSvgString();
+                        
+                        if (svgStringFromSourceEditor != svgStringFromDrawingEditor) {
+                            if (window.confirm("Transfer the updated SVG to Node-RED?")) {
+                                node.svgSourceEditor.setValue(svgStringFromDrawingEditor);
+                            }
+                        }
+                    }
+                });
+            });
+        },
+        oneditsave: function() {
+            var node = this;
+            
+            if (node.svgDrawingEditor) {
+                //TODO node.svgDrawingEditor.destroy();
+                node.svgDrawingEditor = null;
+            }
+
+            var annot = node.svgSourceEditor.getSession().getAnnotations();
+            node.noerr = 0;
+            $("#node-input-noerr").val(0);
+            for (var k=0; k < annot.length; k++) {
+                if (annot[k].type === "error") {
+                    $("#node-input-noerr").val(annot.length);
+                    node.noerr = annot.length;
+                }
+            }
+            
+            var svgString = node.svgSourceEditor.getValue();
+            $("#node-input-svgString").val(svgString);
+            node.svgSourceEditor.destroy();
+            delete node.svgSourceEditor;
+            delete window.node_ace_svg_editor;
+        },
+        oneditcancel: function() {
+            var node = this;
+            
+            if (node.svgDrawingEditor) {
+                //TODO node.svgDrawingEditor.destroy();
+                node.svgDrawingEditor = null;
+            }
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="svg-edit">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div id="svg-edit-container" style="display:none"></div>
+    <div class="form-row" style="margin-bottom:0px;">
+        <input type="hidden" id="node-input-svgString" style="width: 100%; height: 100%;">
+    </div>
+    <div class="form-row">
+        <button id="node-expand-svg-source" class="editor-button" style="margin-top: 4px;" title="Expand source">
+            <i class="fa fa-expand"></i>
+        </button>
+        <button id="node-format-svg-source" class="editor-button" style="margin-top: 4px;" title="Format SVG">
+            <i class="fa fa-code"></i>    
+        </button>
+        <button id="node-open-svg-edit" class="editor-button" style="margin-top: 4px;" title="Open SVG-Edit">
+            <i class="fa fa-paint-brush"></i>    
+        </button>
+    </div>
+    <div class="form-row" style="height: 90%;">
+        <!-- Monaco SVG source editor -->
+        <div id="node-input-svg-source" class="node-source-editor" style="width: 100%; height: 100%; min-height:150px;"></div>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="svg edit">
+   <p>A node to edit svg drawings via Svg-Edit.</p>
+</script>

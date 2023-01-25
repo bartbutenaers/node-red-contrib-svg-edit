@@ -1,0 +1,33 @@
+{
+    "name": "node-red-contrib-svg-edit",
+    "version": "1.0.0",
+    "description": "Node-RED node to edit an SVG string via an integrated SVG-Edit drawing editor",
+    "dependencies": {
+    },
+    "author": {
+        "name": "Bart Butenaers"
+    },
+    "license": "Apache-2.0",
+    "keywords": [
+        "node-red",
+        "svg",
+        "svg-edit",
+        "draw",
+        "drawing",
+        "editor",
+        "graphics"
+    ],   
+    "bugs": {
+        "url": "https://github.com/bartbutenaers/node-red-contrib-svg-edit/issues"
+    },
+    "homepage": "https://github.com/bartbutenaers/node-red-contrib-svg-edit",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bartbutenaers/node-red-contrib-svg-edit.git"
+    },
+    "node-red": {
+        "nodes": {
+            "svg-edit": "svg_edit.js"
+        }
+    }
+}
