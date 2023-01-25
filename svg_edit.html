@@ -32,7 +32,6 @@
         },
         oneditprepare: function() {
             var node = this;
-        debugger; 
 
             node.svgSourceEditor = RED.editor.createEditor({
                 id: 'node-input-svg-source',
@@ -77,11 +76,12 @@
                                               svgSourceEditor.mozRequestFullScreen    || 
                                               svgSourceEditor.msRequestFullscreen;
 
+                // Show the svg source string input field in full screen
                 if( requestFullScreenMethod ) {
                     requestFullScreenMethod.apply(svgSourceEditor);
                 }
             });
-            
+
             $("#node-format-svg-source").on("click", function (e) {
                 try {
                     var svgIn = node.svgSourceEditor.getValue();
@@ -91,11 +91,12 @@
                     console.error(error);
                 }       
             });
-            
+
             $("#node-open-svg-edit").on("click", async function (e) {
-                debugger
                 let svgEditContainer = document.getElementById('svg-edit-container');
 
+                // Make sure the container DIV element is visible before svg-edit is being initialized.
+                // See https://github.com/SVG-Edit/svgedit/issues/875
                 svgEditContainer.style.display = "";
 
                 if (!node.svgDrawingEditor) {
@@ -118,6 +119,7 @@
                     })
                 }
 
+                // Transfer the SVG string from Node-RED to svg-edit
                 var svgString = node.svgSourceEditor.getValue();
                 node.svgDrawingEditor.loadFromString(svgString);
 
@@ -128,21 +130,24 @@
                                               svgEditContainer.mozRequestFullScreen    || 
                                               svgEditContainer.msRequestFullscreen;
 
+                // Show svg-edit in full screen
                 if( requestFullScreenMethod ) {
                     requestFullScreenMethod.apply(svgEditContainer);
                 }
-     
-// TODO we moeten deze event handler ook bij sluiten verwijderen.  Hoe ?????????????????????????????????????????                
+
+                // TODO Does this event handler need to be removed when not required anymore??
                 $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(event) {
                     if (!document.fullscreenElement) {
                         // Leaving full screen mode
                         svgEditContainer.style.display = "none";
-                        
+
                         var svgStringFromSourceEditor = node.svgSourceEditor.getValue();
                         var svgStringFromDrawingEditor = node.svgDrawingEditor.svgCanvas.getSvgString();
-                        
+
+                        // Show a confirmation box, when the SVG string has been changed in svg-edit
                         if (svgStringFromSourceEditor != svgStringFromDrawingEditor) {
                             if (window.confirm("Transfer the updated SVG to Node-RED?")) {
+                                // Transfer the updated SVG string from svg-edit to Node-RED
                                 node.svgSourceEditor.setValue(svgStringFromDrawingEditor);
                             }
                         }
