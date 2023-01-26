@@ -66,7 +66,6 @@
             }
 
             $("#node-expand-svg-source").on("click", async function (e) {
-                debugger
                 let svgSourceEditor = document.getElementById('node-input-svg-source');
 
                 // Check which implementation is available
@@ -99,6 +98,7 @@
                 // See https://github.com/SVG-Edit/svgedit/issues/875
                 svgEditContainer.style.display = "";
 
+                // Create an svg-edit editor once and reuse it every time the button is being clicked
                 if (!node.svgDrawingEditor) {
                     node.svgDrawingEditor = new SvgDrawingEditor(svgEditContainer);
                     node.svgDrawingEditor.init();
@@ -135,11 +135,16 @@
                     requestFullScreenMethod.apply(svgEditContainer);
                 }
 
-                // TODO Does this event handler need to be removed when not required anymore??
-                $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(event) {
+                $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', handleFullScreenChange);
+                
+                function handleFullScreenChange(event) {
+                    // Execute some actions when leaving the full screen mode
                     if (!document.fullscreenElement) {
-                        // Leaving full screen mode
+                        // Hide the svg-edit container div element again, to make sure svg-edit doesn't show up inside this node's config screen
                         svgEditContainer.style.display = "none";
+                        
+                        // Remove this full screen change handler function, to make sure we won't end up with N duplicate handlers all doing the same stuff
+                        $(document).off("fullscreenchange", handleFullScreenChange);
 
                         var svgStringFromSourceEditor = node.svgSourceEditor.getValue();
                         var svgStringFromDrawingEditor = node.svgDrawingEditor.svgCanvas.getSvgString();
@@ -152,7 +157,7 @@
                             }
                         }
                     }
-                });
+                }
             });
         },
         oneditsave: function() {
