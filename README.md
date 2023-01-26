@@ -1,12 +1,14 @@
 # node-red-contrib-svg-edit
-Node-RED node to edit an SVG string via an integrated SVG-Edit drawing editor
+Node-RED node to edit an SVG string via an integrated SVG-Edit drawing editor.
+
+Svg-edit is a free online SVG editor, that allows you to have a drawing editor integrated into Node-RED.  That way you can store you SVG drawings automatically inside Node-RED via this node, without having to copy/paste it via a third party SVG editor.  See the readme page of [svg-edit](https://github.com/SVG-Edit/svgedit/blob/master/README.md) for more information.  Here you can find a short [introduction](http://ehmdunque.altervista.org/i-informatica/manuali/SVG-edit/SVG-Edit_2.6/Short_intro_SVG-edit.html) to svg-edit.
 
 I would really like to thank [Thorsten von Eicken](https://github.com/tve) for providing me the basic idea for this node. 
 
 ## Install
 Run the following npm command in your Node-RED user directory (typically ~/.node-red):
 ```
-npm install node-red-contrib-svg-edit
+npm install bartbutenaers/node-red-contrib-svg-edit
 ```
 
 ## Support my Node-RED developments
@@ -18,8 +20,8 @@ Please buy my wife a coffee to keep her happy, while I am busy developing Node-R
 ## TODO's
 + Allow the [svgedit](https://www.npmjs.com/package/svgedit) NPM package to be used as a dependency, to host svg-edit locally for offline setups.
    Currently the ***cloud version*** of svg-edit is being used (via this node's endpoint that acts as a proxy to avoid CORS issues).
-+ The *"Cancel"* button - when leaving svgedit - does seem to be have incorrectly.
 + Add a custom button to the svg-edit top bar, to store the changes meanwhile to Node-RED withouth having to leave svg-edit.
++ Try to fix the incorrect text alignments in the top/bottom bars (see [discussion](https://github.com/SVG-Edit/svgedit/discussions/878)).
 
 ## Node Usage
 
