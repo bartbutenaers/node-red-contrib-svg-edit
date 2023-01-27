@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "Node-RED node to edit an SVG string via an integrated SVG-Edit drawing editor",
     "dependencies": {
+        "resolve-pkg": "^2.0.0"
     },
     "author": {
         "name": "Bart Butenaers"
